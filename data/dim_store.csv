@@ -1,0 +1,57 @@
+StoreKey,StoreNumber,StoreName,RegionKey,StoreFormat,StoreStatus,OpeningDate
+STR001,1,Ontario Store 1,REG01,Urban,Open,2018-04-02
+STR002,2,Ontario Store 2,REG01,Standard,Open,2020-02-01
+STR003,3,Ontario Store 3,REG01,Standard,Open,2019-07-04
+STR004,4,Ontario Store 4,REG01,Standard,Open,2018-02-24
+STR005,5,Ontario Store 5,REG01,Urban,Open,2023-02-12
+STR006,6,Ontario Store 6,REG01,Standard,Open,2023-08-16
+STR007,7,Ontario Store 7,REG01,Large Format,Open,2017-05-11
+STR008,8,Ontario Store 8,REG01,Standard,Open,2018-01-19
+STR009,9,Quebec Store 1,REG02,Standard,Open,2019-08-11
+STR010,10,Quebec Store 2,REG02,Urban,Open,2023-10-02
+STR011,11,Quebec Store 3,REG02,Standard,Open,2023-04-18
+STR012,12,Quebec Store 4,REG02,Standard,Open,2025-01-11
+STR013,13,Quebec Store 5,REG02,Urban,Open,2024-11-12
+STR014,14,Quebec Store 6,REG02,Urban,Open,2021-09-15
+STR015,15,Quebec Store 7,REG02,Standard,Open,2022-01-14
+STR016,16,Quebec Store 8,REG02,Urban,Open,2020-02-14
+STR017,17,Western Canada Store 1,REG03,Standard,Open,2018-10-16
+STR018,18,Western Canada Store 2,REG03,Urban,Open,2021-09-28
+STR019,19,Western Canada Store 3,REG03,Large Format,Open,2020-02-13
+STR020,20,Western Canada Store 4,REG03,Standard,Open,2019-06-01
+STR021,21,Western Canada Store 5,REG03,Large Format,Open,2018-02-23
+STR022,22,Western Canada Store 6,REG03,Standard,Open,2021-04-06
+STR023,23,Western Canada Store 7,REG03,Standard,Open,2021-01-10
+STR024,24,Western Canada Store 8,REG03,Large Format,Open,2023-10-09
+STR025,25,Atlantic Store 1,REG04,Large Format,Open,2017-06-27
+STR026,26,Atlantic Store 2,REG04,Urban,Open,2022-02-25
+STR027,27,Atlantic Store 3,REG04,Urban,Open,2018-05-27
+STR028,28,Atlantic Store 4,REG04,Large Format,Open,2017-11-19
+STR029,29,Atlantic Store 5,REG04,Urban,Open,2020-04-15
+STR030,30,Atlantic Store 6,REG04,Urban,Open,2023-12-09
+STR031,31,Atlantic Store 7,REG04,Large Format,Open,2023-06-23
+STR032,32,Atlantic Store 8,REG04,Standard,Open,2024-11-25
+STR033,33,British Columbia Store 1,REG05,Standard,Open,2017-07-07
+STR034,34,British Columbia Store 2,REG05,Urban,Open,2019-07-23
+STR035,35,British Columbia Store 3,REG05,Large Format,Open,2017-11-23
+STR036,36,British Columbia Store 4,REG05,Standard,Open,2018-02-18
+STR037,37,British Columbia Store 5,REG05,Large Format,Open,2020-02-13
+STR038,38,British Columbia Store 6,REG05,Large Format,Open,2024-02-17
+STR039,39,British Columbia Store 7,REG05,Large Format,Open,2018-10-29
+STR040,40,British Columbia Store 8,REG05,Large Format,Open,2020-12-26
+STR041,41,Prairies Store 1,REG06,Standard,Open,2024-07-08
+STR042,42,Prairies Store 2,REG06,Large Format,Open,2024-11-14
+STR043,43,Prairies Store 3,REG06,Urban,Open,2024-04-08
+STR044,44,Prairies Store 4,REG06,Standard,Open,2023-11-01
+STR045,45,Prairies Store 5,REG06,Urban,Open,2018-12-02
+STR046,46,Prairies Store 6,REG06,Urban,Open,2025-03-06
+STR047,47,Prairies Store 7,REG06,Standard,Open,2018-11-01
+STR048,48,Prairies Store 8,REG06,Large Format,Open,2021-04-04
+STR049,49,Northern Canada Store 1,REG07,Large Format,Open,2024-03-06
+STR050,50,Northern Canada Store 2,REG07,Urban,Open,2023-04-01
+STR051,51,Northern Canada Store 3,REG07,Standard,Open,2024-09-05
+STR052,52,Northern Canada Store 4,REG07,Large Format,Open,2017-08-18
+STR053,53,Northern Canada Store 5,REG07,Standard,Open,2017-05-12
+STR054,54,Northern Canada Store 6,REG07,Large Format,Open,2021-07-02
+STR055,55,Northern Canada Store 7,REG07,Large Format,Open,2017-09-29
+STR056,56,Northern Canada Store 8,REG07,Standard,Open,2023-05-13

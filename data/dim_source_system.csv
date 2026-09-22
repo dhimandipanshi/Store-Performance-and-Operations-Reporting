@@ -1,0 +1,8 @@
+SourceSystemKey,SourceSystemName,SystemOwner
+SYS01,Point of Sale,Store Operations
+SYS02,Inventory Management,Merchandising
+SYS03,Workforce Management,Human Resources
+SYS04,Enterprise Data Warehouse,Technology
+SYS05,Power BI,Analytics
+SYS06,Vendor Portal,External Vendors
+SYS07,Automation Platform,Automation Centre

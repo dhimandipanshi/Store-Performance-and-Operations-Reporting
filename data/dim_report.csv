@@ -1,0 +1,6 @@
+ReportKey,ReportName,ReportFrequency,BusinessOwner
+RPT01,Daily Store Sales Report,Daily,Retail Operations
+RPT02,Weekly Inventory Report,Weekly,Merchandising
+RPT03,Monthly Productivity Report,Monthly,Finance
+RPT04,Data Quality Exception Report,Daily,Data Governance
+RPT05,Automation Monitoring Report,Daily,Analytics

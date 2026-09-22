@@ -1,0 +1,8 @@
+KPIKey,KPIName,UnitOfMeasure
+KPI01,Sales,CAD
+KPI02,Units Sold,Units
+KPI03,Inventory,Units
+KPI04,Productivity,CAD per Labour Hour
+KPI05,Report Timeliness,Percentage
+KPI06,Data Quality,Issue Count
+KPI07,Automation Success,Percentage
