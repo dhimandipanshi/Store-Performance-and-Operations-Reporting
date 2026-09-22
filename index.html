@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TJX Canada — Store Performance &amp; Operations Reporting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg-1:#F1F1F2;
+    --bg-2:#E6E7E9;
+    --surface: rgba(255,255,255,0.62);
+    --surface-2: rgba(255,255,255,0.46);
+    --surface-solid: rgba(255,255,255,0.88);
+    --border: rgba(255,255,255,0.78);
+    --border-soft: rgba(20,20,22,0.07);
+    --text-1:#17181B;
+    --text-2:#52565D;
+    --text-3:#8A8E96;
+
+    /* TJX red — reserved for hero KPI, alerts, negative deltas, the 95% target line, active filter chip. Nowhere else. */
+    --red:#9C1C26;
+    --red-ink:#6E1119;
+    --red-soft: rgba(156,28,38,0.10);
+
+    /* everything else is strict greyscale */
+    --accent: var(--text-1);
+    --accent-ink: var(--text-1);
+    --accent-soft: rgba(20,20,22,0.06);
+    --accent-2: var(--text-2);
+    --positive: var(--text-1);
+    --positive-soft: rgba(20,20,22,0.06);
+    --negative: var(--red);
+    --negative-soft: var(--red-soft);
+    --warning: var(--text-2);
+    --warning-soft: rgba(20,20,22,0.05);
+    --shadow: 0 24px 64px -28px rgba(20,20,22,0.30);
+    --shadow-sm: 0 10px 28px -16px rgba(20,20,22,0.26);
+    --radius-lg:20px;
+    --radius-md:16px;
+    --radius-sm:11px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg-1:#111214;
+      --bg-2:#17181B;
+      --surface: rgba(255,255,255,0.055);
+      --surface-2: rgba(255,255,255,0.035);
+      --surface-solid: rgba(26,27,30,0.92);
+      --border: rgba(255,255,255,0.10);
+      --border-soft: rgba(255,255,255,0.07);
+      --text-1:#F3F3F4;
+      --text-2:#B7B9BE;
+      --text-3:#84878D;
+      --red:#D65B63;
+      --red-ink:#F3B3B7;
+      --red-soft: rgba(214,91,99,0.16);
+      --accent: var(--text-1);
+      --accent-ink: var(--text-1);
+      --accent-soft: rgba(255,255,255,0.07);
+      --accent-2: var(--text-2);
+      --positive: var(--text-1);
+      --positive-soft: rgba(255,255,255,0.07);
+      --negative: var(--red);
+      --negative-soft: var(--red-soft);
+      --warning: var(--text-2);
+      --warning-soft: rgba(255,255,255,0.05);
+      --shadow: 0 24px 64px -28px rgba(0,0,0,0.65);
+      --shadow-sm: 0 10px 28px -16px rgba(0,0,0,0.55);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg-1:#111214; --bg-2:#17181B; --surface: rgba(255,255,255,0.055); --surface-2: rgba(255,255,255,0.035);
+    --surface-solid: rgba(26,27,30,0.92); --border: rgba(255,255,255,0.10); --border-soft: rgba(255,255,255,0.07);
+    --text-1:#F3F3F4; --text-2:#B7B9BE; --text-3:#84878D;
+    --red:#D65B63; --red-ink:#F3B3B7; --red-soft: rgba(214,91,99,0.16);
+    --accent: var(--text-1); --accent-ink: var(--text-1); --accent-soft: rgba(255,255,255,0.07); --accent-2: var(--text-2);
+    --positive: var(--text-1); --positive-soft: rgba(255,255,255,0.07);
+    --negative: var(--red); --negative-soft: var(--red-soft);
+    --warning: var(--text-2); --warning-soft: rgba(255,255,255,0.05);
+    --shadow: 0 24px 64px -28px rgba(0,0,0,0.65); --shadow-sm: 0 10px 28px -16px rgba(0,0,0,0.55); color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html{
+    scroll-padding-top: calc(env(safe-area-inset-top,0px) + 16px);
+    scroll-behavior:smooth;
+  }
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color:var(--text-1);
+    background:
+      radial-gradient(1100px 620px at 88% -8%, rgba(20,20,22,0.05), transparent 60%),
+      radial-gradient(900px 500px at -10% 12%, rgba(156,28,38,0.03), transparent 55%),
+      linear-gradient(160deg, var(--bg-1), var(--bg-2));
+    background-attachment:fixed;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    font-variant-numeric: tabular-nums lining-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-variant-numeric: tabular-nums lining-nums;}
+  a{color:inherit;}
+  ::selection{background:var(--accent-soft);}
+
+  /* ---------- App shell ---------- */
+  .app{display:flex; min-height:100vh; align-items:stretch;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:280px; flex:0 0 280px;
+    position:sticky; top:0; align-self:flex-start;
+    height:100vh; overflow-y:auto;
+    padding:26px 20px 26px 22px;
+    border-right:1px solid var(--border-soft);
+    display:flex; flex-direction:column; gap:22px;
+  }
+  .brand{display:flex; flex-direction:column; gap:2px; padding:0 2px;}
+  .wordmark{display:block; height:26px; width:auto; margin-bottom:14px; color:var(--text-1);}
+  .brand-name{font-family:'Inter',sans-serif; font-weight:600; font-size:15.5px; letter-spacing:0.1px;}
+  .brand-sub{font-size:12px; color:var(--text-3); line-height:1.4;}
+
+  .pillrow{display:flex; flex-wrap:wrap; gap:6px;}
+  .pill{
+    font-size:12px; padding:6px 11px; border-radius:999px;
+    background:var(--surface-2); border:1px solid var(--border-soft);
+    color:var(--text-2); cursor:pointer; user-select:none;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+    white-space:nowrap;
+  }
+  .pill:hover{background:var(--surface-solid); color:var(--text-1);}
+  .pill.active{background:var(--red); color:#fff; border-color:transparent; font-weight:600;}
+
+  .hero-block{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:20px 18px;
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:var(--shadow-sm);
+  }
+  .hero-eyebrow{font-size:12px; color:var(--text-3); margin-bottom:8px;}
+  .hero-number{
+    font-family:'Inter',sans-serif; font-weight:800;
+    font-size:46px; line-height:1; letter-spacing:-0.02em;
+    color:var(--red);
+  }
+  .hero-number small{font-size:20px; font-weight:600; color:var(--text-2); margin-left:2px;}
+  .hero-label{font-size:13px; color:var(--text-2); margin-top:8px; line-height:1.45;}
+  .hero-delta{margin-top:12px;}
+
+  .delta{
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:12.5px; font-weight:600; padding:3px 9px 3px 7px;
+    border-radius:999px;
+  }
+  .delta.up{background:var(--surface-solid); border:1px solid var(--border-soft); color:var(--text-1);}
+  .delta.down{background:var(--red-soft); color:var(--red);}
+  .delta.down.good{background:var(--surface-solid); border:1px solid var(--border-soft); color:var(--text-1);}
+  .delta.flat{background:var(--surface-2); color:var(--text-2);}
+  .delta svg{width:11px;height:11px;}
+
+  .side-pills{display:flex; flex-wrap:wrap; gap:7px; margin-top:14px;}
+  .mini-pill{
+    background:var(--surface-2); border:1px solid var(--border-soft);
+    border-radius:var(--radius-sm); padding:8px 10px; flex:1 1 auto; min-width:112px;
+  }
+  .mini-pill .mv{font-family:'Inter',sans-serif; font-weight:700; font-size:15px;}
+  .mini-pill .ml{font-size:10.5px; color:var(--text-3); margin-top:2px; text-transform:none;}
+
+  nav.navgroups{display:flex; flex-direction:column; gap:16px; margin-top:2px;}
+  .navgroup-title{font-size:11px; color:var(--text-3); padding:0 8px; margin-bottom:6px; letter-spacing:0.02em;}
+  .navlink{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 10px; border-radius:10px; font-size:13.5px; color:var(--text-2);
+    text-decoration:none; font-weight:500; cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .navlink .dot{width:6px;height:6px;border-radius:50%; background:var(--text-3); flex:0 0 auto;}
+  .navlink:hover{background:var(--surface-2); color:var(--text-1);}
+  .navlink.active{background:var(--surface-solid); color:var(--text-1); font-weight:600;}
+  .navlink.active .dot{background:var(--text-1);}
+
+  .sidebar-foot{margin-top:auto; font-size:11px; color:var(--text-3); line-height:1.6; padding:0 2px;}
+
+  /* ---------- Main ---------- */
+  .main{flex:1; min-width:0; padding:26px 30px 60px;}
+  .topbar{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+    margin-bottom:20px; flex-wrap:wrap;
+  }
+  .topbar h1{font-family:'Inter',sans-serif; font-size:22px; margin:0 0 4px; font-weight:700; letter-spacing:-0.01em;}
+  .topbar p{margin:0; color:var(--text-2); font-size:13.5px; max-width:640px; line-height:1.5;}
+  .topbar-meta{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .badge{
+    font-size:11.5px; padding:6px 10px; border-radius:999px; font-weight:600;
+    background:var(--surface-solid); border:1px solid var(--border); color:var(--text-2);
+    box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:6px;
+  }
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--text-2);}
+  .theme-toggle{
+    background:var(--surface-solid); border:1px solid var(--border); border-radius:999px;
+    padding:6px 12px; font-size:12px; font-weight:600; color:var(--text-2); cursor:pointer;
+    box-shadow:var(--shadow-sm);
+  }
+
+  section.view{margin-bottom:38px; scroll-margin-top:16px;}
+  .view-head{display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:14px; flex-wrap:wrap;}
+  .view-head h2{font-family:'Inter',sans-serif; font-size:17px; margin:0; font-weight:700;}
+  .view-head .view-idx{color:var(--text-3); font-size:12.5px; font-weight:600; margin-right:8px;}
+  .view-head .view-sub{font-size:12.5px; color:var(--text-3);}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:var(--shadow);
+    padding:20px 20px 18px;
+  }
+  .card + .note{margin-top:8px;}
+  .chart-title{font-size:14px; font-weight:600; color:var(--text-1); line-height:1.4; max-width:56ch; margin:0 0 2px;}
+  .chart-axes-note{font-size:11.5px; color:var(--text-3); margin-bottom:12px;}
+  .chart-takeaway{font-size:12px; color:var(--text-3); margin-top:10px; line-height:1.5; border-top:1px dashed var(--border-soft); padding-top:10px;}
+  .lineage{font-size:10.5px; color:var(--text-3); margin-top:6px; font-family:'SFMono-Regular',Consolas,Menlo,monospace; opacity:0.8; word-break:break-word;}
+
+  /* KPI header row */
+  .kpi-grid{display:grid; grid-template-columns:1.35fr repeat(5, 1fr); gap:14px;}
+  .kpi-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:16px 16px 14px; backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:space-between; min-height:132px;
+  }
+  .kpi-card.hero{
+    background:var(--surface);
+    border-color: var(--red-soft);
+  }
+  .kpi-top .kpi-label{font-size:12px; color:var(--text-2); font-weight:600;}
+  .kpi-top .kpi-icon{width:26px;height:26px;border-radius:8px; background:var(--surface-solid); border:1px solid var(--border-soft); display:flex; align-items:center; justify-content:center; color:var(--text-2); float:right;}
+  .kpi-value{font-family:'Inter',sans-serif; font-weight:700; font-size:30px; margin-top:10px; letter-spacing:-0.01em;}
+  .kpi-card.hero .kpi-value{font-size:38px; color:var(--red);}
+  .kpi-value small{font-size:15px; color:var(--text-2); font-weight:600;}
+  .kpi-foot{display:flex; align-items:center; justify-content:space-between; margin-top:10px;}
+  .kpi-target{font-size:11px; color:var(--text-3);}
+
+  /* Filters row */
+  .filters{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    background:var(--surface-2); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+    padding:12px 14px; margin-bottom:16px;
+  }
+  .filter-group{display:flex; flex-direction:column; gap:5px;}
+  .filter-group label{font-size:10.5px; color:var(--text-3); font-weight:600;}
+  select.filter-select{
+    background:var(--surface-solid); border:1px solid var(--border); border-radius:9px;
+    padding:7px 10px; font-size:12.5px; color:var(--text-1); font-family:inherit; min-width:132px; cursor:pointer;
+  }
+  .filter-group.scenario{flex-direction:row; align-items:flex-end; gap:6px;}
+  .seg{display:flex; background:var(--surface-solid); border:1px solid var(--border); border-radius:9px; padding:2px; gap:2px;}
+  .seg button{
+    border:none; background:transparent; font-size:12px; font-weight:600; color:var(--text-2);
+    padding:6px 12px; border-radius:7px; cursor:pointer; font-family:inherit;
+  }
+  .seg button.active{background:var(--red); color:#fff;}
+  .filters .reset{margin-left:auto; font-size:11.5px; color:var(--text-1); cursor:pointer; font-weight:600; background:none; border:none; font-family:inherit; text-decoration:underline; text-underline-offset:2px;}
+
+  /* Two column layout */
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .grid-2 .card{display:flex; flex-direction:column;}
+  .chart-wrap{position:relative; flex:1; min-height:270px;}
+
+  /* funnel */
+  .funnel-stack{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
+  .funnel-stage{
+    background:var(--surface-2); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+    padding:14px; position:relative; overflow:hidden;
+  }
+  .funnel-stage .fs-idx{font-size:10.5px; color:var(--text-3); font-weight:700;}
+  .funnel-stage .fs-name{font-size:12.5px; color:var(--text-2); font-weight:600; margin-top:3px;}
+  .funnel-stage .fs-val{font-family:'Inter',sans-serif; font-size:24px; font-weight:700; margin-top:8px;}
+  .funnel-stage .fs-bar{height:5px; border-radius:4px; background:var(--border-soft); margin-top:10px; overflow:hidden;}
+  .funnel-stage .fs-bar > span{display:block; height:100%; background:var(--text-1); border-radius:4px;}
+  .funnel-stage .fs-arrow{position:absolute; right:-1px; top:50%; transform:translateY(-50%); color:var(--text-3); font-size:14px;}
+
+  table.detail{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.detail thead th{
+    text-align:left; font-size:10.5px; color:var(--text-3); font-weight:700; text-transform:none;
+    padding:0 10px 8px; border-bottom:1px solid var(--border-soft);
+  }
+  table.detail tbody td{padding:9px 10px; border-bottom:1px solid var(--border-soft); color:var(--text-2);}
+  table.detail tbody tr:hover{background:var(--surface-2);}
+  table.detail td.num, table.detail th.num{text-align:right; font-variant-numeric:tabular-nums;}
+  .tag{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px;}
+  .tag.actual{background:var(--surface-solid); color:var(--text-1); border:1px solid var(--border-soft);}
+  .tag.target{background:transparent; color:var(--text-2); border:1px solid var(--border-soft);}
+  .flag{color:var(--red); font-weight:700;}
+  .ok{color:var(--text-1); font-weight:700;}
+  .table-scroll{overflow-x:auto; margin-top:2px;}
+  .table-foot{display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:11.5px; color:var(--text-3);}
+
+  .callout{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--surface-2); border:1px solid var(--border-soft);
+    border-radius:var(--radius-md); padding:12px 14px; font-size:12px; color:var(--text-2); margin-top:16px; line-height:1.55;
+  }
+  .callout b{color:var(--text-1);}
+  .callout .ic{flex:0 0 auto; color:var(--text-2); font-size:15px; line-height:1.2;}
+
+  footer.appfoot{margin-top:10px; padding-top:18px; border-top:1px solid var(--border-soft); font-size:11.5px; color:var(--text-3); line-height:1.7;}
+
+  @media (max-width: 1180px){
+    .kpi-grid{grid-template-columns:repeat(3,1fr);}
+    .kpi-card.hero{grid-column:1 / -1;}
+    .grid-2{grid-template-columns:1fr;}
+  }
+  @media (max-width: 900px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%; flex:none; height:auto; position:relative; border-right:none; border-bottom:1px solid var(--border-soft); flex-direction:row; flex-wrap:wrap; align-items:center; padding:16px;}
+    .sidebar > *{flex:1 1 100%;}
+    nav.navgroups{flex-direction:row; flex-wrap:wrap; gap:8px;}
+    .navgroup-title{display:none;}
+    .navgroup{display:flex; flex-wrap:wrap; gap:6px;}
+    .sidebar-foot{display:none;}
+    .main{padding:20px 16px 50px;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width: 560px){
+    .kpi-grid{grid-template-columns:1fr 1fr;}
+    .funnel-stack{grid-template-columns:1fr 1fr;}
+  }
+  .visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px;}
+  @media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto !important; transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" aria-label="Dashboard navigation">
+    <div class="brand">
+      <svg class="wordmark" viewBox="0 0 176 42" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TJX Canada">
+        <text x="0" y="29" font-family="Inter, sans-serif" font-weight="800" font-size="28" letter-spacing="-0.5" fill="currentColor">TJX</text>
+        <text x="42" y="40" font-family="Inter, sans-serif" font-weight="700" font-size="9" letter-spacing="2.5" fill="currentColor">CANADA</text>
+      </svg>
+      <div class="brand-name">Store Performance &amp; Ops Reporting</div>
+      <div class="brand-sub">Reporting &amp; Analytics + Retail Operations</div>
+    </div>
+
+    <div>
+      <div class="navgroup-title">Reporting period</div>
+      <div class="pillrow" id="periodPills">
+        <span class="pill active" data-period="last30">Last 30 Days</span>
+        <span class="pill" data-period="lastq">Last Quarter</span>
+        <span class="pill" data-period="ytd">Fiscal YTD</span>
+      </div>
+    </div>
+
+    <div class="hero-block">
+      <div class="hero-eyebrow">Hero metric — Store Productivity Rate (Target Attainment)</div>
+      <div class="hero-number num" id="heroValue">96.4<small>%</small></div>
+      <div class="hero-label">Weighted avg. of actual vs. target productivity KPIs, all active stores</div>
+      <div class="hero-delta"><span class="delta up" id="heroDelta">▲ 1.8 pts vs. prior period</span></div>
+      <div class="side-pills">
+        <div class="mini-pill"><div class="mv num" id="sideStores">412</div><div class="ml">Active stores</div></div>
+        <div class="mini-pill"><div class="mv num" id="sideAuto">97.1%</div><div class="ml">Automation success</div></div>
+        <div class="mini-pill"><div class="mv num" id="sideExc">1,284</div><div class="ml">Open exceptions</div></div>
+      </div>
+    </div>
+
+    <nav class="navgroups" aria-label="Section links">
+      <div class="navgroup">
+        <div class="navgroup-title">Views</div>
+        <a class="navlink active" href="#view-header" data-target="view-header"><span class="dot"></span>1 · Header KPI Row</a>
+        <a class="navlink" href="#view-funnel" data-target="view-funnel"><span class="dot"></span>2 · Regional Ops Funnel</a>
+        <a class="navlink" href="#view-productivity" data-target="view-productivity"><span class="dot"></span>3 · Productivity &amp; Efficiency</a>
+        <a class="navlink" href="#view-sourcesys" data-target="view-sourcesys"><span class="dot"></span>4 · Source System Integration</a>
+        <a class="navlink" href="#view-automation" data-target="view-automation"><span class="dot"></span>5 · Automation &amp; Audit Readiness</a>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      Source: <code>fact_retail_reporting</code> joined to <code>dim_store, dim_region, dim_dept, dim_kpi, dim_activity_type, dim_report, dim_source_sys, dim_scenerio, dim_date</code>.<br>
+      Built for Store Ops Leaders, Regional Managers, Global CI Partners &amp; IT Leadership.
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>TJX Canada — Store Performance &amp; Operations Reporting</h1>
+        <p>One-screen view of store productivity, reporting coverage and automation health across TJX Canada banners (Winners, HomeSense, Marshalls), refreshed nightly from <span class="num">fact_retail_reporting</span>.</p>
+      </div>
+      <div class="topbar-meta">
+        <span class="badge"><span class="dot"></span> Nightly refresh · complete</span>
+        <span class="badge">FY2026 · Period ending Sep 21</span>
+        <button class="theme-toggle" id="themeToggle" type="button">Toggle theme</button>
+      </div>
+    </div>
+
+    <!-- ================= VIEW 1 — HEADER KPI ROW ================= -->
+    <section class="view" id="view-header">
+      <div class="view-head">
+        <h2><span class="view-idx">01</span>Header KPI Row</h2>
+        <span class="view-sub">Executive glance — hero metric + 5 supporting metrics, all with period-over-period deltas</span>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card hero">
+          <div class="kpi-top"><span class="kpi-icon">◎</span><div class="kpi-label">Overall Store Productivity Rate<br>(Target Attainment %)</div></div>
+          <div class="kpi-value num" id="k-hero">96.4<small>%</small></div>
+          <div class="kpi-foot"><span class="delta up" id="d-hero">▲ 1.8 pts</span><span class="kpi-target">Target: 95.0%</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top"><span class="kpi-icon">🏬</span><div class="kpi-label">Total Stores Active</div></div>
+          <div class="kpi-value num" id="k-stores">412</div>
+          <div class="kpi-foot"><span class="delta up" id="d-stores">▲ 3 stores</span><span class="kpi-target">of 415 mapped</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top"><span class="kpi-icon">⚠</span><div class="kpi-label">KPI Reconciliations / Exceptions</div></div>
+          <div class="kpi-value num" id="k-exc">1,284</div>
+          <div class="kpi-foot"><span class="delta down good" id="d-exc">▼ 6.2%</span><span class="kpi-target">vs. prior period</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top"><span class="kpi-icon">⚙</span><div class="kpi-label">Automation &amp; RPA Success Rate</div></div>
+          <div class="kpi-value num" id="k-auto">97.1<small>%</small></div>
+          <div class="kpi-foot"><span class="delta up" id="d-auto">▲ 0.6 pts</span><span class="kpi-target">Benchmark: 98.0%</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top"><span class="kpi-icon">📄</span><div class="kpi-label">Report Utilization Count</div></div>
+          <div class="kpi-value num" id="k-report">8,940</div>
+          <div class="kpi-foot"><span class="delta up" id="d-report">▲ 4.3%</span><span class="kpi-target">report opens</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-top"><span class="kpi-icon">Δ</span><div class="kpi-label">Variance vs. Target / Prior Period</div></div>
+          <div class="kpi-value num" id="k-var">-1.2<small>%</small></div>
+          <div class="kpi-foot"><span class="delta up" id="d-var">▲ 0.4 pts improved</span><span class="kpi-target">Actual vs. Target scenario</span></div>
+        </div>
+      </div>
+      <div class="lineage" style="margin-top:10px;">SUM(fact_retail_reporting.actual_value) / SUM(fact_retail_reporting.target_value) WHERE dim_kpi.kpi_name = 'Store Productivity Rate' AND dim_scenerio.scenario_name IN ('Actual','Target') GROUP BY dim_date.period, filtered by dim_store.is_active = TRUE.</div>
+    </section>
+
+    <!-- ================= VIEW 2 — FUNNEL ================= -->
+    <section class="view" id="view-funnel">
+      <div class="view-head">
+        <h2><span class="view-idx">02</span>Store &amp; Regional Operations Funnel</h2>
+        <span class="view-sub">KPI lifecycle coverage: Ingestion → KPI Calculation → Process Audit → Report Publishing</span>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label for="f-region">Region (dim_region)</label>
+          <select class="filter-select" id="f-region">
+            <option value="all">All regions</option>
+            <option value="Ontario">Ontario</option>
+            <option value="Quebec">Quebec</option>
+            <option value="Atlantic">Atlantic</option>
+            <option value="Prairies">Prairies</option>
+            <option value="British Columbia">British Columbia</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="f-dept">Department (dim_dept)</label>
+          <select class="filter-select" id="f-dept">
+            <option value="all">All departments</option>
+            <option value="Apparel">Apparel</option>
+            <option value="Home & Gifts">Home &amp; Gifts</option>
+            <option value="Footwear">Footwear</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Beauty">Beauty</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="f-store">Store (dim_store)</label>
+          <select class="filter-select" id="f-store">
+            <option value="all">All store formats</option>
+            <option value="Winners">Winners</option>
+            <option value="HomeSense">HomeSense</option>
+            <option value="Marshalls">Marshalls</option>
+          </select>
+        </div>
+        <div class="filter-group scenario">
+          <div>
+            <label>Scenario (dim_scenerio)</label>
+            <div class="seg" id="f-scenario">
+              <button class="active" data-scenario="Actual" type="button">Actual</button>
+              <button data-scenario="Target" type="button">Target / Budget</button>
+            </div>
+          </div>
+        </div>
+        <button class="reset" id="resetFilters" type="button">Reset filters</button>
+      </div>
+
+      <div class="card">
+        <p class="chart-title">Report publishing completion trails ingestion by 3–8 points across regions — the funnel narrows most between KPI Calculation and Process Audit, not at the final publishing step.</p>
+        <p class="chart-axes-note">Stage completion rate (%) at each lifecycle step, filtered by current selection above.</p>
+
+        <div class="funnel-stack" id="funnelStack"></div>
+
+        <div class="chart-wrap" style="min-height:220px;">
+          <canvas id="funnelChart" role="img" aria-label="Line chart of KPI lifecycle completion rate by stage and region"></canvas>
+        </div>
+        <p class="chart-takeaway" id="funnelTakeaway">Ontario and British Columbia stay above 94% through Report Publishing; Quebec drops below 92% and Prairies trails close behind at 92.6%, both pointing to a KPI-Calculation-to-Audit bottleneck.</p>
+        <div class="lineage">COUNT(DISTINCT fact.store_id) WHERE stage_status = 'Complete' / COUNT(DISTINCT fact.store_id) total, per dim_activity_type stage, joined dim_source_sys → dim_kpi → dim_activity_type → dim_report, grouped by dim_region.region_name and dim_scenerio.scenario_name.</div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <p class="chart-title">Store-level detail — drill into the exact rows behind the funnel and productivity metrics above.</p>
+        <p class="chart-axes-note">Grain: one row per store × department × scenario, matching the <span class="num">fact_retail_reporting</span> table grain.</p>
+        <div class="table-scroll">
+          <table class="detail">
+            <thead>
+              <tr>
+                <th>Store ID</th><th>Banner</th><th>Region</th><th>Department</th><th>Scenario</th>
+                <th class="num">Productivity %</th><th class="num">Exceptions</th><th>Audit Status</th>
+              </tr>
+            </thead>
+            <tbody id="detailTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot"><span id="tableCount">Showing 12 of 412 stores</span><span>Sorted by exceptions, descending</span></div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 3 — PRODUCTIVITY & EFFICIENCY ================= -->
+    <section class="view" id="view-productivity">
+      <div class="view-head">
+        <h2><span class="view-idx">03</span>Productivity &amp; Process Efficiency</h2>
+        <span class="view-sub">The core view — linking reconciliation speed to store productivity, region by region</span>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <p class="chart-title">Prairies and Quebec are the only regions to lose productivity quarter-over-quarter — both sorted first as the underperformers.</p>
+          <p class="chart-axes-note">Y-axis: Store KPI Productivity Rate (%) · X-axis: Region, sorted by variance ascending (worst first)</p>
+          <div class="chart-wrap"><canvas id="productivityChart" role="img" aria-label="Grouped bar chart comparing store productivity by region, last two quarters vs prior two quarters"></canvas></div>
+          <p class="chart-takeaway">Regions with rising reconciliation time (right chart) are the same regions losing productivity here — Prairies and Quebec.</p>
+          <div class="lineage">AVG(fact.actual_value) WHERE dim_kpi.kpi_name='Store Productivity Rate' AND dim_scenerio='Actual', GROUP BY dim_region.region_name, dim_date.fiscal_quarter; variance = last_2Q − prior_2Q.</div>
+        </div>
+        <div class="card">
+          <p class="chart-title">Reconciliation time is climbing in Quebec and Prairies — the two regions now missing their productivity target.</p>
+          <p class="chart-axes-note">Y-axis: Median hours to resolve a data/reporting exception · X-axis: Month, one line per region</p>
+          <div class="chart-wrap"><canvas id="resolutionChart" role="img" aria-label="Line chart tracking median exception resolution time in hours over six months, one line per region"></canvas></div>
+          <p class="chart-takeaway">Ontario and BC cut resolution time by roughly 1.5–2 hrs since April; Quebec and Prairies are trending the opposite direction, each up about 3 hrs.</p>
+          <div class="lineage">PERCENTILE_CONT(TIMESTAMP_DIFF(fact.resolved_at, fact.exception_opened_at, HOUR), 0.5) WHERE dim_activity_type.activity_type='Exception Reconciliation', GROUP BY dim_region.region_name, dim_date.month.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 4 — SOURCE SYSTEM ================= -->
+    <section class="view" id="view-sourcesys">
+      <div class="view-head">
+        <h2><span class="view-idx">04</span>Reporting &amp; Source System Integration</h2>
+        <span class="view-sub">Upstream pipeline accuracy vs. volume, and report utilization, by source system</span>
+      </div>
+
+      <div class="card">
+        <p class="chart-title">Legacy Store Ops DB and the RPA Bot Farm carry the lowest pipeline accuracy despite processing the least volume — the two sources most worth auditing first.</p>
+        <p class="chart-axes-note">Left axis: Data Pipeline Accuracy (%) — bars · Right axis: Records Processed (thousands) — line, by dim_source_sys</p>
+        <div class="chart-wrap" style="min-height:300px;"><canvas id="sourceSysChart" role="img" aria-label="Bar and line chart comparing pipeline accuracy and processing volume across five source systems"></canvas></div>
+        <p class="chart-takeaway">High-volume systems (SAP BW, Oracle Retail DW) stay above 97% accuracy; low-volume systems (Legacy Store Ops DB, RPA Bot Farm) dip to 91–94%.</p>
+        <div class="lineage">accuracy = 1 − (COUNTIF(fact.record_status='Error') / COUNT(fact.record_id)); volume = COUNT(fact.record_id), both GROUP BY dim_source_sys.system_name, joined via fact_retail_reporting.source_sys_id.</div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <p class="chart-title">The Daily Store Scorecard drives most report traffic — Exception Reconciliation Logs are opened least, despite feeding the productivity story above.</p>
+        <p class="chart-axes-note">Report opens (count) by dim_report.report_name, current period</p>
+        <div class="chart-wrap" style="min-height:230px;"><canvas id="reportUsageChart" role="img" aria-label="Bar chart of report utilization count by report name"></canvas></div>
+        <p class="chart-takeaway">Increasing visibility of the Exception Reconciliation Log could shorten the resolution-time trend seen in View 3.</p>
+        <div class="lineage">COUNT(fact.report_view_event_id) GROUP BY dim_report.report_name, joined via fact_retail_reporting.report_id.</div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 5 — AUTOMATION & AUDIT ================= -->
+    <section class="view" id="view-automation">
+      <div class="view-head">
+        <h2><span class="view-idx">05</span>Automation &amp; Audit Readiness</h2>
+        <span class="view-sub">RPA / Power Automate jobs completed before store opening, by department, vs. the 98% benchmark</span>
+      </div>
+
+      <div class="card">
+        <p class="chart-title">Footwear and Beauty are the only departments missing the 98% pre-open automation benchmark.</p>
+        <p class="chart-axes-note">Y-axis: % of automated reporting jobs completed successfully before daily store opening · X-axis: Department (dim_dept) · Dashed line: 98% readiness benchmark</p>
+        <div class="chart-wrap" style="min-height:300px;"><canvas id="automationChart" role="img" aria-label="Bar chart of automation success rate by department against a 98 percent benchmark line"></canvas></div>
+        <p class="chart-takeaway">Beauty sits 2.6 pts below benchmark — the largest gap of any department this period.</p>
+        <div class="lineage">SUM(fact.job_status='Success' AND fact.completed_at &lt; dim_store.open_time) / COUNT(fact.job_id) WHERE dim_activity_type.activity_type='RPA Execution', GROUP BY dim_dept.dept_name.</div>
+      </div>
+
+      <div class="callout">
+        <span class="ic">ⓘ</span>
+        <div><b>Schema note — metric omitted.</b> "Customer footfall" and "sales dollars" were referenced in early planning conversations but have no corresponding field in <span class="num">fact_retail_reporting</span> or any <span class="num">dim_*</span> table in the schema provided. They're intentionally left out rather than estimated. If a <span class="num">dim_sales</span> or footfall source system is added to <span class="num">dim_source_sys</span>, this view can be extended to show automation readiness against sales impact.</div>
+      </div>
+    </section>
+
+    <footer class="appfoot">
+      <p style="margin:0 0 8px;">Synthetic data generated for a portfolio exercise, modelled on the TJX Reporting &amp; Analytics Specialist job description. Not TJX data. No affiliation or endorsement implied.</p>
+      This prototype renders the five required views against representative sample data shaped to the schema in the brief (<span class="num">fact_retail_reporting</span> joined to <span class="num">dim_store, dim_region, dim_dept, dim_kpi, dim_activity_type, dim_report, dim_source_sys, dim_scenerio, dim_date</span>). Every card lists the exact aggregation and join logic under a dotted line so Analytics can verify it reproduces 1:1 against BigQuery once pointed at the live project — swap the sample arrays near the top of the script block for a BigQuery-backed fetch to go live. No metric on this page has a substitute or placeholder category outside the given schema.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- THEME ---------------- */
+  var root = document.documentElement;
+  var themeBtn = document.getElementById('themeToggle');
+  themeBtn.addEventListener('click', function(){
+    var cur = root.getAttribute('data-theme');
+    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next;
+    if(!cur){ next = isDark ? 'light' : 'dark'; }
+    else { next = cur === 'dark' ? 'light' : 'dark'; }
+    root.setAttribute('data-theme', next);
+  });
+
+  /* ---------------- CHART.JS DEFAULTS ---------------- */
+  function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size = 11.5;
+  Chart.defaults.color = cssVar('--text-2');
+
+  /* Region series stay strictly greyscale — differentiated by shade, dash pattern and point style, never colour. */
+  var palette = {
+    Ontario:'#17181B', Quebec:'#4B4F56', Atlantic:'#7A7E86', Prairies:'#9BA0A8', 'British Columbia':'#2E3238'
+  };
+  var dashPatterns = {
+    Ontario:[], Quebec:[6,3], Atlantic:[2,3], Prairies:[8,3,2,3], 'British Columbia':[4,2]
+  };
+  var pointStyles = {
+    Ontario:'circle', Quebec:'rect', Atlantic:'triangle', Prairies:'rectRot', 'British Columbia':'cross'
+  };
+
+  /* ---------------- SAMPLE DATA (schema-shaped) ---------------- */
+  var regions = ['Ontario','Quebec','Atlantic','Prairies','British Columbia'];
+
+  var regionMeta = {
+    Ontario:{ stores:168, ingestion:99.2, kpi:98.5, audit:96.1, publish:94.8 },
+    Quebec:{ stores:96, ingestion:98.7, kpi:97.9, audit:93.4, publish:91.2 },
+    Atlantic:{ stores:42, ingestion:97.5, kpi:96.8, audit:95.0, publish:93.9 },
+    Prairies:{ stores:58, ingestion:98.9, kpi:98.1, audit:94.7, publish:92.6 },
+    'British Columbia':{ stores:48, ingestion:99.4, kpi:98.9, audit:97.2, publish:96.0 }
+  };
+
+  var productivity = {
+    Ontario:{ prior:95.1, last:96.8 },
+    Quebec:{ prior:93.0, last:92.4 },
+    Atlantic:{ prior:94.2, last:95.0 },
+    Prairies:{ prior:92.8, last:92.1 },
+    'British Columbia':{ prior:96.5, last:97.9 }
+  };
+
+  var months = ['Apr','May','Jun','Jul','Aug','Sep'];
+  var resolution = {
+    Ontario:[8.2,7.9,7.5,7.1,6.8,6.4],
+    Quebec:[11.5,12.0,12.8,13.4,14.1,14.6],
+    Atlantic:[9.0,8.7,8.5,8.2,7.9,7.6],
+    Prairies:[10.2,10.8,11.5,12.1,12.9,13.5],
+    'British Columbia':[7.0,6.7,6.3,6.0,5.8,5.5]
+  };
+
+  var sourceSystems = ['SAP BW','Oracle Retail DW','RPA Bot Farm','Power Automate','Legacy Store Ops DB'];
+  var sourceSysData = {
+    'SAP BW':{ accuracy:99.1, volume:842 },
+    'Oracle Retail DW':{ accuracy:97.8, volume:615 },
+    'RPA Bot Farm':{ accuracy:94.2, volume:128 },
+    'Power Automate':{ accuracy:96.5, volume:340 },
+    'Legacy Store Ops DB':{ accuracy:91.0, volume:54 }
+  };
+
+  var reportNames = ['Daily Store Scorecard','Weekly Regional Ops','Exception Reconciliation Log','Automation Health Report','Executive Productivity Summary'];
+  var reportUsage = [3820, 2260, 680, 1180, 940];
+
+  var depts = ['Apparel','Home & Gifts','Footwear','Accessories','Beauty'];
+  var deptAutomation = { 'Apparel':98.6, 'Home & Gifts':98.3, 'Footwear':96.2, 'Accessories':98.9, 'Beauty':95.4 };
+
+  var banners = ['Winners','HomeSense','Marshalls'];
+
+  // period presets for header KPI row
+  var periodData = {
+    last30: { hero:96.4, heroDelta:'▲ 1.8 pts', heroUp:true, stores:412, storesDelta:'▲ 3 stores', storesUp:true,
+      exc:1284, excDelta:'▼ 6.2%', excUp:true, auto:97.1, autoDelta:'▲ 0.6 pts', autoUp:true,
+      report:8940, reportDelta:'▲ 4.3%', reportUp:true, varr:-1.2, varDelta:'▲ 0.4 pts improved', varUp:true },
+    lastq: { hero:95.1, heroDelta:'▲ 0.9 pts', heroUp:true, stores:409, storesDelta:'▲ 5 stores', storesUp:true,
+      exc:1462, excDelta:'▼ 3.1%', excUp:true, auto:96.4, autoDelta:'▲ 1.1 pts', autoUp:true,
+      report:25680, reportDelta:'▲ 7.8%', reportUp:true, varr:-2.1, varDelta:'▲ 0.2 pts improved', varUp:true },
+    ytd: { hero:94.6, heroDelta:'▲ 2.4 pts', heroUp:true, stores:404, storesDelta:'▲ 11 stores', storesUp:true,
+      exc:8760, excDelta:'▼ 9.4%', excUp:true, auto:95.8, autoDelta:'▲ 2.0 pts', autoUp:true,
+      report:71200, reportDelta:'▲ 12.6%', reportUp:true, varr:-3.0, varDelta:'▲ 1.1 pts improved', varUp:true }
+  };
+
+  /* ---------------- HEADER KPI ROW: PERIOD PILLS ---------------- */
+  function fmtInt(n){ return n.toLocaleString('en-CA'); }
+
+  function applyPeriod(key){
+    var d = periodData[key];
+    document.getElementById('heroValue').innerHTML = d.hero.toFixed(1) + '<small>%</small>';
+    document.getElementById('heroDelta').textContent = d.heroDelta + ' vs. prior period';
+    document.getElementById('heroDelta').className = 'delta ' + (d.heroUp ? 'up' : 'down');
+    document.getElementById('sideStores').textContent = fmtInt(d.stores);
+    document.getElementById('sideAuto').textContent = d.auto.toFixed(1) + '%';
+    document.getElementById('sideExc').textContent = fmtInt(d.exc);
+
+    document.getElementById('k-hero').innerHTML = d.hero.toFixed(1) + '<small>%</small>';
+    document.getElementById('d-hero').textContent = d.heroDelta;
+    document.getElementById('d-hero').className = 'delta ' + (d.heroUp ? 'up' : 'down');
+
+    document.getElementById('k-stores').textContent = fmtInt(d.stores);
+    document.getElementById('d-stores').textContent = d.storesDelta;
+    document.getElementById('d-stores').className = 'delta ' + (d.storesUp ? 'up' : 'down');
+
+    document.getElementById('k-exc').textContent = fmtInt(d.exc);
+    document.getElementById('d-exc').textContent = d.excDelta;
+    document.getElementById('d-exc').className = 'delta ' + (d.excUp ? 'up' : 'down');
+
+    document.getElementById('k-auto').innerHTML = d.auto.toFixed(1) + '<small>%</small>';
+    document.getElementById('d-auto').textContent = d.autoDelta;
+    document.getElementById('d-auto').className = 'delta ' + (d.autoUp ? 'up' : 'down');
+
+    document.getElementById('k-report').textContent = fmtInt(d.report);
+    document.getElementById('d-report').textContent = d.reportDelta;
+    document.getElementById('d-report').className = 'delta ' + (d.reportUp ? 'up' : 'down');
+
+    document.getElementById('k-var').innerHTML = d.varr.toFixed(1) + '<small>%</small>';
+    document.getElementById('d-var').textContent = d.varDelta;
+    document.getElementById('d-var').className = 'delta ' + (d.varUp ? 'up' : 'down');
+  }
+
+  document.getElementById('periodPills').addEventListener('click', function(e){
+    var t = e.target.closest('.pill');
+    if(!t) return;
+    document.querySelectorAll('#periodPills .pill').forEach(function(p){ p.classList.remove('active'); });
+    t.classList.add('active');
+    applyPeriod(t.getAttribute('data-period'));
+  });
+  applyPeriod('last30');
+
+  /* ---------------- NAV ACTIVE STATE ---------------- */
+  var navlinks = document.querySelectorAll('.navlink');
+  var views = document.querySelectorAll('section.view');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        navlinks.forEach(function(l){ l.classList.toggle('active', l.getAttribute('data-target') === entry.target.id); });
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+  views.forEach(function(v){ io.observe(v); });
+
+  /* ---------------- FUNNEL STAGES (static cards, filtered) ---------------- */
+  var stageKeys = ['ingestion','kpi','audit','publish'];
+  var stageLabels = ['Data Ingestion','KPI Calculation','Process Audit','Report Publishing'];
+  var stageSub = ['dim_source_sys','dim_kpi','dim_activity_type','dim_report'];
+
+  function currentRegions(){
+    var sel = document.getElementById('f-region').value;
+    return sel === 'all' ? regions : [sel];
+  }
+
+  function weightedStageAvg(stageKey, regionList){
+    var totalStores = 0, sum = 0;
+    regionList.forEach(function(r){
+      var m = regionMeta[r];
+      sum += m[stageKey] * m.stores;
+      totalStores += m.stores;
+    });
+    return sum / totalStores;
+  }
+
+  function renderFunnelStages(){
+    var rl = currentRegions();
+    var scenario = document.querySelector('#f-scenario .active').getAttribute('data-scenario');
+    var wrap = document.getElementById('funnelStack');
+    wrap.innerHTML = '';
+    stageKeys.forEach(function(sk, i){
+      var val = scenario === 'Target' ? 99.5 - i*0.3 : weightedStageAvg(sk, rl);
+      var div = document.createElement('div');
+      div.className = 'funnel-stage';
+      div.innerHTML =
+        '<div class="fs-idx">STAGE ' + (i+1) + ' · ' + stageSub[i] + '</div>' +
+        '<div class="fs-name">' + stageLabels[i] + '</div>' +
+        '<div class="fs-val num">' + val.toFixed(1) + '%</div>' +
+        '<div class="fs-bar"><span style="width:' + Math.min(100,val) + '%"></span></div>' +
+        (i < 3 ? '<div class="fs-arrow">›</div>' : '');
+      wrap.appendChild(div);
+    });
+  }
+
+  /* ---------------- FUNNEL LINE CHART ---------------- */
+  var funnelCtx = document.getElementById('funnelChart').getContext('2d');
+  var funnelChart = new Chart(funnelCtx, {
+    type:'line',
+    data:{
+      labels: stageLabels,
+      datasets: regions.map(function(r){
+        return {
+          label:r,
+          data: stageKeys.map(function(sk){ return regionMeta[r][sk]; }),
+          borderColor: palette[r], backgroundColor: palette[r],
+          borderDash: dashPatterns[r], pointStyle: pointStyles[r],
+          tension:0.35, borderWidth:2.5, pointRadius:3.5, pointHoverRadius:5.5, fill:false
+        };
+      })
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:7, padding:14 } },
+        tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'; } } }
+      },
+      scales:{
+        y:{ min:85, max:100, title:{ display:true, text:'Stage completion rate (%)' }, grid:{ color: 'rgba(20,20,22,0.09)' } },
+        x:{ title:{ display:true, text:'KPI lifecycle stage' }, grid:{ display:false } }
+      }
+    }
+  });
+
+  function applyRegionDeptStoreFilterToFunnelLine(){
+    var rl = currentRegions();
+    funnelChart.data.datasets.forEach(function(ds){
+      ds.hidden = rl.indexOf(ds.label) === -1;
+    });
+    funnelChart.update();
+  }
+
+  /* ---------------- DETAIL TABLE ---------------- */
+  var detailRows = (function(){
+    var rows = [];
+    var storeSeq = 1000;
+    regions.forEach(function(r){
+      depts.forEach(function(d, di){
+        banners.forEach(function(b, bi){
+          storeSeq += 7;
+          var base = regionMeta[r].publish + (di - 2) * 1.1 + (bi - 1) * 0.6;
+          var prod = Math.max(85, Math.min(99.5, base + (Math.random()*2 - 1)));
+          var exceptions = Math.round((100 - base) * (1 + Math.random()*0.6));
+          rows.push({
+            id: 'CA-' + storeSeq,
+            banner: b,
+            region: r,
+            dept: d,
+            actualProd: +prod.toFixed(1),
+            targetProd: 95.0,
+            exceptions: exceptions,
+            audit: prod > 94 ? 'Pass' : (prod > 90 ? 'Review' : 'Escalated')
+          });
+        });
+      });
+    });
+    return rows;
+  })();
+
+  function renderDetailTable(){
+    var region = document.getElementById('f-region').value;
+    var dept = document.getElementById('f-dept').value;
+    var store = document.getElementById('f-store').value;
+    var scenario = document.querySelector('#f-scenario .active').getAttribute('data-scenario');
+
+    var filtered = detailRows.filter(function(row){
+      return (region === 'all' || row.region === region) &&
+             (dept === 'all' || row.dept === dept) &&
+             (store === 'all' || row.banner === store);
+    }).sort(function(a,b){ return b.exceptions - a.exceptions; });
+
+    var shown = filtered.slice(0, 12);
+    var tbody = document.getElementById('detailTableBody');
+    tbody.innerHTML = '';
+    shown.forEach(function(row){
+      var val = scenario === 'Target' ? row.targetProd : row.actualProd;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + row.id + '</td>' +
+        '<td>' + row.banner + '</td>' +
+        '<td>' + row.region + '</td>' +
+        '<td>' + row.dept + '</td>' +
+        '<td><span class="tag ' + (scenario==='Target'?'target':'actual') + '">' + scenario + '</span></td>' +
+        '<td class="num">' + val.toFixed(1) + '%</td>' +
+        '<td class="num">' + row.exceptions + '</td>' +
+        '<td class="' + (row.audit === 'Escalated' ? 'flag' : (row.audit === 'Pass' ? 'ok' : '')) + '">' + row.audit + '</td>';
+      tbody.appendChild(tr);
+    });
+    document.getElementById('tableCount').textContent = 'Showing ' + shown.length + ' of ' + filtered.length + ' matching rows (' + detailRows.length + ' total)';
+  }
+
+  function refreshFunnelSection(){
+    renderFunnelStages();
+    applyRegionDeptStoreFilterToFunnelLine();
+    renderDetailTable();
+    var rl = currentRegions();
+    var worst = rl.slice().sort(function(a,b){ return regionMeta[a].publish - regionMeta[b].publish; })[0];
+    document.getElementById('funnelTakeaway').textContent = rl.length > 1
+      ? 'Ontario and British Columbia stay above 94% through Report Publishing; Quebec drops below 92% and Prairies trails close behind at 92.6%, both pointing to a KPI-Calculation-to-Audit bottleneck.'
+      : worst + ' publishes at ' + regionMeta[worst].publish.toFixed(1) + '%, ' + (regionMeta[worst].ingestion - regionMeta[worst].publish).toFixed(1) + ' pts below its own ingestion rate.';
+  }
+
+  document.getElementById('f-region').addEventListener('change', refreshFunnelSection);
+  document.getElementById('f-dept').addEventListener('change', renderDetailTable);
+  document.getElementById('f-store').addEventListener('change', renderDetailTable);
+  document.getElementById('f-scenario').addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    document.querySelectorAll('#f-scenario button').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    refreshFunnelSection();
+  });
+  document.getElementById('resetFilters').addEventListener('click', function(){
+    document.getElementById('f-region').value = 'all';
+    document.getElementById('f-dept').value = 'all';
+    document.getElementById('f-store').value = 'all';
+    document.querySelectorAll('#f-scenario button').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelector('#f-scenario button[data-scenario="Actual"]').classList.add('active');
+    refreshFunnelSection();
+  });
+
+  refreshFunnelSection();
+
+  /* ---------------- PRODUCTIVITY GROUPED BAR (sorted by variance, worst first) ---------------- */
+  var prodRegionsSorted = regions.slice().sort(function(a,b){
+    var va = productivity[a].last - productivity[a].prior;
+    var vb = productivity[b].last - productivity[b].prior;
+    return va - vb;
+  });
+
+  new Chart(document.getElementById('productivityChart').getContext('2d'), {
+    data:{
+      labels: prodRegionsSorted,
+      datasets:[
+        { type:'bar', label:'Prior 2 Quarters', data: prodRegionsSorted.map(function(r){ return productivity[r].prior; }), backgroundColor:'rgba(23,24,27,0.28)', borderRadius:5, maxBarThickness:26 },
+        { type:'bar', label:'Last 2 Quarters', data: prodRegionsSorted.map(function(r){ return productivity[r].last; }), backgroundColor:'#17181B', borderRadius:5, maxBarThickness:26 },
+        { type:'line', label:'95% Target', data: prodRegionsSorted.map(function(){ return 95; }), borderColor: cssVar('--red'), borderDash:[6,5], borderWidth:2, pointRadius:0, fill:false }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:7, padding:14 } } },
+      scales:{
+        y:{ min:88, max:100, title:{ display:true, text:'Store KPI Productivity Rate (%)' }, grid:{ color:'rgba(20,20,22,0.09)' } },
+        x:{ title:{ display:true, text:'Region (worst variance first)' }, grid:{ display:false } }
+      }
+    }
+  });
+
+  /* ---------------- RESOLUTION TIME LINE ---------------- */
+  new Chart(document.getElementById('resolutionChart').getContext('2d'), {
+    type:'line',
+    data:{
+      labels: months,
+      datasets: regions.map(function(r){
+        return { label:r, data: resolution[r], borderColor: palette[r], backgroundColor: palette[r],
+          borderDash: dashPatterns[r], pointStyle: pointStyles[r], tension:0.35, borderWidth:2.5, pointRadius:3, fill:false };
+      })
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:7, padding:14 } } },
+      scales:{
+        y:{ title:{ display:true, text:'Median resolution time (hours)' }, grid:{ color:'rgba(20,20,22,0.09)' } },
+        x:{ title:{ display:true, text:'Month' }, grid:{ display:false } }
+      }
+    }
+  });
+
+  /* ---------------- SOURCE SYSTEM: accuracy bars + volume line ---------------- */
+  new Chart(document.getElementById('sourceSysChart').getContext('2d'), {
+    data:{
+      labels: sourceSystems,
+      datasets:[
+        {
+          type:'bar', label:'Pipeline Accuracy (%)',
+          data: sourceSystems.map(function(s){ return sourceSysData[s].accuracy; }),
+          backgroundColor: sourceSystems.map(function(s){ return sourceSysData[s].accuracy < 95 ? cssVar('--red') : '#17181B'; }),
+          borderRadius:6, maxBarThickness:46, yAxisID:'y'
+        },
+        {
+          type:'line', label:'Volume (thousand records)',
+          data: sourceSystems.map(function(s){ return sourceSysData[s].volume; }),
+          borderColor:'#9BA0A8', backgroundColor:'#9BA0A8', borderDash:[5,3], borderWidth:2.5, tension:0.3, pointRadius:4, pointStyle:'rect', yAxisID:'y1'
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:7, padding:14 } } },
+      scales:{
+        y:{ min:85, max:100, position:'left', title:{ display:true, text:'Pipeline accuracy (%)' }, grid:{ color:'rgba(20,20,22,0.09)' } },
+        y1:{ min:0, max:900, position:'right', title:{ display:true, text:'Volume (thousand records)' }, grid:{ display:false } },
+        x:{ title:{ display:true, text:'Source system (dim_source_sys)' }, grid:{ display:false } }
+      }
+    }
+  });
+
+  /* ---------------- REPORT USAGE BAR ---------------- */
+  new Chart(document.getElementById('reportUsageChart').getContext('2d'), {
+    type:'bar',
+    data:{
+      labels: reportNames,
+      datasets:[{ label:'Report opens', data: reportUsage, backgroundColor:'#17181B', borderRadius:6, maxBarThickness:44 }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ title:{ display:true, text:'Report opens (count)' }, grid:{ color:'rgba(20,20,22,0.09)' } },
+        y:{ grid:{ display:false } }
+      }
+    }
+  });
+
+  /* ---------------- AUTOMATION BENCHMARK ---------------- */
+  new Chart(document.getElementById('automationChart').getContext('2d'), {
+    data:{
+      labels: depts,
+      datasets:[
+        {
+          type:'bar', label:'Pre-open automation success (%)',
+          data: depts.map(function(d){ return deptAutomation[d]; }),
+          backgroundColor: depts.map(function(d){ return deptAutomation[d] < 98 ? cssVar('--red') : '#17181B'; }),
+          borderRadius:6, maxBarThickness:52
+        },
+        {
+          type:'line', label:'98% Benchmark',
+          data: depts.map(function(){ return 98; }),
+          borderColor:'#54585F', borderDash:[6,5], borderWidth:2, pointRadius:0, fill:false
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:7, padding:14 } } },
+      scales:{
+        y:{ min:90, max:100, title:{ display:true, text:'% jobs completed before store opening' }, grid:{ color:'rgba(20,20,22,0.09)' } },
+        x:{ title:{ display:true, text:'Department (dim_dept)' }, grid:{ display:false } }
+      }
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
